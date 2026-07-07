@@ -476,7 +476,8 @@ jobs:
           commit_date=$(git log -1 --pretty=format:'%ad' --date short "${commit_sha}" || : )
 
           # use git describe to get the nearest tag and use that to build the version (e.g. 1.4.0-dev24 or 1.4.0)
-          commit_version=$(git describe --tags --match 'v*' "${commit_sha}"| sed -e 's/^v//; s/-g[0-9a-f]\+$//; s/-\([0-9]\+\)$/-dev\1/')
+          # fall back to "0.0.0-dev" if no matching tags exist (e.g. in a fork without version tags)
+          commit_version=$(git describe --tags --match 'v*' "${commit_sha}" 2>/dev/null | sed -e 's/^v//; s/-g[0-9a-f]\+$//; s/-\([0-9]\+\)$/-dev\1/' || echo "0.0.0-dev")
 
           # shortened commit sha
           commit_short=$(git rev-parse --short "${commit_sha}")
