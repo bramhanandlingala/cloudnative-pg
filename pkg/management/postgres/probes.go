@@ -76,7 +76,7 @@ func (instance *Instance) GetStatus() (result *postgres.PostgresqlStatus, err er
 
 	// Get the latest configuration hash from the PostgreSQL settings
 	rowConfigHash := superUserDB.QueryRow(
-		"SELECT setting FROM pg_catalog.pg_show_all_file_settings() WHERE name = $1",
+		"SELECT setting FROM pg_catalog.pg_settings WHERE name = $1",
 		postgres.CNPGConfigSha256)
 	if err := rowConfigHash.Scan(&result.LoadedConfigurationHash); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
