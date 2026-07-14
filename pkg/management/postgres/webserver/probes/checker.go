@@ -21,6 +21,7 @@ package probes
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -119,6 +120,12 @@ func (e *executor) IsHealthy(
 
 	probeRunner := getProbeRunnerFromCluster(e.probeType, cluster)
 	if err := probeRunner.IsHealthy(ctx, e.instance); err != nil {
+		if e.probeType == probeTypeStartup && errors.Is(err, postgres.ErrPgRejectingConnection) {
+			contextLogger.Trace("Startup probe tolerating postgres rejecting connections")
+			_, _ = fmt.Fprint(w, "OK")
+			return
+		}
+
 		contextLogger.Warning(fmt.Sprintf("%s probe failing", e.probeType), "err", err.Error())
 		http.Error(
 			w,
