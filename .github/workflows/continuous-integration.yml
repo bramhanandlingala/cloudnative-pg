@@ -540,7 +540,11 @@ jobs:
           commit_date=$(git log -1 --pretty=format:'%ad' --date short "${commit_sha}" || : )
 
           # use git describe to get the nearest tag and use that to build the version (e.g. 1.4.0-dev24 or 1.4.0)
-          commit_version=$(git describe --tags --match 'v*' "${commit_sha}"| sed -e 's/^v//; s/-g[0-9a-f]\+$//; s/-\([0-9]\+\)$/-dev\1/')
+          commit_version=$(git describe --tags --match 'v*' "${commit_sha}" 2>/dev/null | sed -e 's/^v//; s/-g[0-9a-f]\+$//; s/-\([0-9]\+\)$/-dev\1/' || true)
+          # fall back to a dev version based on commit SHA when no tags are present
+          if [[ -z "${commit_version}" ]]; then
+            commit_version="0.0.0-dev"
+          fi
 
           # shortened commit sha
           commit_short=$(git rev-parse --short "${commit_sha}")
